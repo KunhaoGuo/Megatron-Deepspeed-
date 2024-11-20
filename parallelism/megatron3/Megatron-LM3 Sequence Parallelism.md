@@ -13,7 +13,7 @@
 
 #### tensor parallelism
 
-![tensor parallelism](static/tensor parallelism.png)
+![tensor parallelism](static/tensor_parallelism.png)
 
 **Attention Block**
 
@@ -46,7 +46,7 @@
 
 ​	在transformer layer中的non TP 区域，数据的操作在sequence dimensions 是相互独立的，所以我们可以沿着sequence dimensions 去切割数据，从而节约activation内存占用。在sequence dimensions 进行并行后，会额外引入集合通信操作。在前向传播中，在执行 f 之前，需要执行一次all_gather操作，在执行 $\bar f$  之后，需要执行一次scatter操作。
 
-![sequence parallelism](static/sequence parallelism.png)
+![sequence parallelism](static/sequence_parallelism.png)
 
 **MLP**
 
@@ -108,13 +108,13 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 实验中的模型配置如下：
 
-![model configuration](static/model configuration.png)
+![model configuration](static/model_configuration.png)
 
 ### Memory Usage
 
 每个transformer layer，在不同的技术下所需要的activation内存总结如下：
 
-![activation memory](static/activation memory.png)
+![activation memory](static/activation_memory.png)
 
 每种技术都可以将所需的内存降低至一半左右，两种技术融合起来可以将所需的内存减少5倍，降低至原来的20%左右，这只是full activation recomputation的2倍左右。
 
@@ -122,7 +122,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 对于22B模型，一个transformer layer的前向传播和反向传播所需的执行时间如下：
 
-![execution time](static/execution time.png)
+![execution time](static/execution_time.png)
 
 ​	前两行表明，SP可以提高训练速度，缩短计算时间，这主要是由于layer-norm和dropout只在 1 / t 的数据上进行计算。这是SP的主要优势的额外的好处（主要优势是，减少activation内存占用）。同时，通过实验还发现，reduce-scatter和all_gather分开执行，比一起执行，更慢，这就减少了SP对性能的提升。
 

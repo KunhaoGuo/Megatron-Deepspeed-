@@ -83,7 +83,7 @@ PipeDream-Flush Schedule
 
 **Schedule with Interleaved Stages**
 
-![Schedule with Interleaved Stages](static/Schedule with Interleaved Stages.png)
+![Schedule_with_Interleaved_Stages](static/Schedule_with_Interleaved_Stages.png)
 
 ​	思路：为了减小pipeline bubble的大小，每个设备可以执行多个子层集合（模型块）的计算，而不是单一的连续子层集合。这样，流水线中的每个设备就被分配了多个stage，所以每个stage有更少的计算。
 
@@ -107,13 +107,13 @@ Bubble time减少至原来的 v 倍，但会带来额外 v 倍的通信量。
 
 随着增加pipeline stage数，通过成比例的增加模型中的层数，来增大模型大小。对于所有的设置都使用大小为8的TP。
 
-![weak scaling](static/weak scaling.png)
+![weak scaling](static/weak_scaling.png)
 
 由结果可知，对于更大的batch size，scale效果更好。因为随着stage增大，pipeline bubble也变大，但对于更大的batch size，pipeline bubble会分摊在更多的microbatch中。
 
 ### Interleaved versus Non-Interleaved Schedule
 
-![Interleaved versus Non-Interleaved Schedule](static/Interleaved versus Non-Interleaved Schedule.png)
+![Interleaved versus Non-Interleaved Schedule](static/Interleaved_versus_Non-Interleaved_Schedule.png)
 
 带有scatter/gather通信优化的 interleaved schedule 比 non-interleaved schedule 的效果更好，但它们之间的差别会随着batch size的增大而减小，有两个原因：
 
@@ -140,7 +140,7 @@ $m = \frac1b * \frac Bd$ : 每个流水线中一个batch的microbatch数
 
 根据p和t的不同，通信量也会有所不同。PP是成本较低的点对点通信，而TP需要all_reduce通信操作。在PP中，对于每个microbatch，在每对连续设备的前向传播和反向传播需要的通信量是 $bsh$ 。在TP中，对于每个microbatch，在每个设备的每一层中，大小为$bsh$ 的数据需要在前向传播和反向传播中各all_reduce两次，所以总的通信量为  $$l^{stage} * （8bsh(\frac{t-1}{t}))$$ 。
 
-![Tensor and Pipeline Model Parallelism](static/Tensor and Pipeline Model Parallelism.png)
+![Tensor and Pipeline Model Parallelism](static/Tensor_and_Pipeline_Model_Parallelism.png)
 
 TP最好在一个服务器中。PP中较多时间花费在pipeline bubble中，所以应该限制PP的stage数，以便micro batch数是stage数的合理的倍数。
 
@@ -158,7 +158,7 @@ $pipeline\,bubble\,size = \frac{p-1}{m} = \frac{n/d-1}{b^`/d} = \frac{n-d}{b^`}$
 
 对于给定的并行化配置，提高batch size大小B，$b^`$会增大，导致m变大，因此bubble size会减小。同时，数据并行所需的all_reduce操作会变少，吞吐量会进一步增大。
 
-![Data and Pipeline Model Parallelism](static/Data and Pipeline Model Parallelism.png)
+![Data and Pipeline Model Parallelism](static/Data_and_Pipeline_Model_Parallelism.png)
 
 随着PP的增大，吞吐量会减小（随着DP的增大，吞吐量会增大）。所以PP应该主要用于支持单个设备放不下的模型，而DP用于扩大训练规模。
 
@@ -166,7 +166,7 @@ $pipeline\,bubble\,size = \frac{p-1}{m} = \frac{n/d-1}{b^`/d} = \frac{n-d}{b^`}$
 
 跨服务器执行all_reduce操作成本非常高。TP需要对每个microbatch执行all_reduce操作，而DP只需要对每个batch执行all_reduce操作。除此之外，每个TP进程只执行一个层的计算子集，效率较低。
 
-![Data and Tensor Model Parallelism](static/Data and Tensor Model Parallelism.png)
+![Data and Tensor Model Parallelism](static/Data_and_Tensor_Model_Parallelism.png)
 
 batch size越大，DP的数据通信会减少（因为需要通信的batch数减少）。
 
@@ -182,7 +182,7 @@ batch size越大，DP的数据通信会减少（因为需要通信的batch数减
 
 b通过改变m来影响bubble size，同时也会影响算数强度。
 
-![Microbatch Size](static/Microbatch Size.png)
+![Microbatch Size](static/Microbatch_Size.png)
 
 **总结3**：最佳的microbatch大小b，取决于模型吞吐量、内存占用、流水线p、DP度d和batch size大小B。
 
@@ -192,7 +192,7 @@ activation checkpoints的数量不会影响吞吐量，但会影响内存占用�
 
 A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活值大小，一个model stage 有 l 个层，有c个checkpoints，那么总的内存占用是：$c*A_{input} + l/c*A^{intermediate}$，当$c = \sqrt{l*(A^{intermediate}/A^{input})}$ 时，内存占用最小。通常情况下，每1～2个transformer layers 去checkpoint是最优的。
 
-![Activation Recomputation](static/Activation Recomputation.png)
+![Activation Recomputation](static/Activation_Recomputation.png)
 
 对于小的batch size，由于反向传播前的激活重计算，会导致一个比较低的吞吐量；但是使用了激活重计算，就可以使用较大的batch size，这可以减小bubble size，从而提升吞吐量。
 
@@ -208,7 +208,7 @@ A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活
 
 通过这个优化，每对连续stage之间的通信量减少为$\frac{bsh}t$
 
-![scatter:gather ](static/scatter:gather .png)
+![scatter:gather ](static/scatter:gather.png)
 
 ### Computation Optimizations
 

@@ -117,13 +117,13 @@ pi pedream的调度方案：
 
 只能保证在一个stage内，前向计算和反向计算使用相同版本的参数，但是不同stage的参数版本还是不一致的。
 
-![weight stashing](static/weight stashing.png)
+![weight stashing](static/weight_stashing.png)
 
 **vertical sync** 
 
 来解决各stage所用参数版本不一致问题，每个stage都用input stage 中最新的参数版本，相应的信息与激活值和梯度一起传递。
 
-![vertical sync](static/vertical sync.png)
+![vertical sync](static/vertical_sync.png)
 
 **weight stashing 是比较重要的，vertical sync的作用可以忽略，所以weight stashing是默认设置**
 
