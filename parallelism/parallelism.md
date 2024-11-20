@@ -32,7 +32,7 @@
 
 ## Method
 
-![pipeldream](/Users/guokunhao/笔记/parallelism/pipeline/pipeldream.png)
+![pipeldream](pipeline/static/pipeldream.png)
 
 有三个问题需要解决：
 
@@ -76,9 +76,9 @@ W~l~^m^  ：使用m台机器进行DP，并使用分布式参数服务器时，�
 
 最小化总体运行时间，等价于最小化最慢的stage的时间，有最优子问题属性，用动态规划求解
 
-![t_ij](/Users/guokunhao/笔记/parallelism/pipeline/t_ij.png)
+![t_ij](pipeline/static/t_ij.png)
 
-![A_jm](/Users/guokunhao/笔记/parallelism/pipeline/A_jm.png)
+![A_jm](pipeline/static/A_jm.png)
 
 子问题个数为O(NM)，每个子问题的复杂度为O(NM)，所以总的时间复杂度为O(N^2^M^2^)
 
@@ -117,13 +117,13 @@ pi pedream的调度方案：
 
 只能保证在一个stage内，前向计算和反向计算使用相同版本的参数，但是不同stage的参数版本还是不一致的。
 
-![weight stashing](/Users/guokunhao/笔记/parallelism/pipeline/weight stashing.png)
+![weight stashing](pipeline/static/weight stashing.png)
 
 **vertical sync** 
 
 来解决各stage所用参数版本不一致问题，每个stage都用input stage 中最新的参数版本，相应的信息与激活值和梯度一起传递。
 
-![vertical sync](/Users/guokunhao/笔记/parallelism/pipeline/vertical sync.png)
+![vertical sync](pipeline/static/vertical sync.png)
 
 **weight stashing 是比较重要的，vertical sync的作用可以忽略，所以weight stashing是默认设置**
 
@@ -143,7 +143,7 @@ pi pedream的调度方案：
 
 ## MLP block
 
-![megatron1-mlp](/Users/guokunhao/笔记/parallelism/megatron1/megatron1-mlp.png)
+![megatron1-mlp](megatron1/static/megatron1-mlp.png)
 
 - 先 **列切割** ，后 **行切割** 
 
@@ -168,7 +168,7 @@ pi pedream的调度方案：
 
 ## Self Attention Block
 
-![megatron1-attention](/Users/guokunhao/笔记/parallelism/megatron1/megatron1-attention.png)
+![megatron1-attention](megatron1/static/megatron1-attention.png)
 
 - 利用多头注意力先天的并行优势，在 Q\K\V 矩阵上按**列切割**，在输出矩阵上按**行切割** 。
 
@@ -178,7 +178,7 @@ pi pedream的调度方案：
 
 ## Embedding Block（输入层）
 
-![embedding](/Users/guokunhao/笔记/parallelism/megatron1/embedding.png)
+![embedding](megatron1/static/embedding.png)
 
 - 输入层和输出层共享权重，在 词表 方向切割矩阵
 
@@ -192,9 +192,9 @@ pi pedream的调度方案：
 
 #### 代码
 
-![crossentropy](/Users/guokunhao/笔记/parallelism/megatron1/crossentropy.png)
+![crossentropy](megatron1/static/crossentropy.png)
 
-![crossenyropy2](/Users/guokunhao/笔记/parallelism/megatron1/crossenyropy2.jpeg)
+![crossenyropy2](megatron1/static/crossenyropy2.jpeg)
 
 ## 随机种子设置
 
@@ -253,7 +253,7 @@ Compression、activation checkpointing、live analysis
 
 **model state不会在训练的所有时间都被用到（现有的方法会在整个训练过程中都保存model state）** 
 
-![ZeRO-DP](/Users/guokunhao/笔记/parallelism/ZeRo/ZeRO-DP.png)
+![ZeRO-DP](ZeRo/static/ZeRO-DP.png)
 
 **基于一下3个关键想法**
 
@@ -400,7 +400,7 @@ t~id~ : the ideal(perfect) time per iteration	t~f~   t~b~  : the time to execute
 
 **Default Schedule**
 
-![GPipe](/Users/guokunhao/笔记/parallelism/megatron2/GPipe.png)
+![GPipe](megatron2/static/GPipe.png)
 
 GPipe Schedule
 
@@ -412,7 +412,7 @@ Bubble  time fraction(pipeline bubble size)$ = \frac{t_{pb}}{t_{id}} = \frac{p -
 
 为了使bubble time变小，m需要变大，这会导致更高的内存占用，需要保存m个micro batch的中间激活。
 
-![pipedream](/Users/guokunhao/笔记/parallelism/megatron2/pipedream.png)
+![pipedream](megatron2/static/pipedream.png)
 
 PipeDream-Flush Schedule
 
@@ -424,7 +424,7 @@ PipeDream-Flush Schedule
 
 **Schedule with Interleaved Stages**
 
-![Schedule with Interleaved Stages](/Users/guokunhao/笔记/parallelism/megatron2/Schedule with Interleaved Stages.png)
+![Schedule with Interleaved Stages](megatron2/static/Schedule with Interleaved Stages.png)
 
 ​	思路：为了减小pipeline bubble的大小，每个设备可以执行多个子层集合（模型块）的计算，而不是单一的连续子层集合。这样，流水线中的每个设备就被分配了多个stage，所以每个stage有更少的计算。
 
@@ -448,13 +448,13 @@ Bubble time减少至原来的 v 倍，但会带来额外 v 倍的通信量。
 
 随着增加pipeline stage数，通过成比例的增加模型中的层数，来增大模型大小。对于所有的设置都使用大小为8的TP。
 
-![weak scaling](/Users/guokunhao/笔记/parallelism/megatron2/weak scaling.png)
+![weak scaling](megatron2/static/weak scaling.png)
 
 由结果可知，对于更大的batch size，scale效果更好。因为随着stage增大，pipeline bubble也变大，但对于更大的batch size，pipeline bubble会分摊在更多的microbatch中。
 
 ### Interleaved versus Non-Interleaved Schedule
 
-![Interleaved versus Non-Interleaved Schedule](/Users/guokunhao/笔记/parallelism/megatron2/Interleaved versus Non-Interleaved Schedule.png)
+![Interleaved versus Non-Interleaved Schedule](megatron2/static/Interleaved versus Non-Interleaved Schedule.png)
 
 带有scatter/gather通信优化的 interleaved schedule 比 non-interleaved schedule 的效果更好，但它们之间的差别会随着batch size的增大而减小，有两个原因：
 
@@ -481,7 +481,7 @@ $m = \frac1b * \frac Bd$ : 每个流水线中一个batch的microbatch数
 
 根据p和t的不同，通信量也会有所不同。PP是成本较低的点对点通信，而TP需要all_reduce通信操作。在PP中，对于每个microbatch，在每对连续设备的前向传播和反向传播需要的通信量是 $bsh$ 。在TP中，对于每个microbatch，在每个设备的每一层中，大小为$bsh$ 的数据需要在前向传播和反向传播中各all_reduce两次，所以总的通信量为  $$l^{stage} * （8bsh(\frac{t-1}{t}))$$ 。
 
-![Tensor and Pipeline Model Parallelism](/Users/guokunhao/笔记/parallelism/megatron2/Tensor and Pipeline Model Parallelism.png)
+![Tensor and Pipeline Model Parallelism](megatron2/static/Tensor and Pipeline Model Parallelism.png)
 
 TP最好在一个服务器中。PP中较多时间花费在pipeline bubble中，所以应该限制PP的stage数，以便micro batch数是stage数的合理的倍数。
 
@@ -499,7 +499,7 @@ $pipeline\,bubble\,size = \frac{p-1}{m} = \frac{n/d-1}{b^`/d} = \frac{n-d}{b^`}$
 
 对于给定的并行化配置，提高batch size大小B，$b^`$会增大，导致m变大，因此bubble size会减小。同时，数据并行所需的all_reduce操作会变少，吞吐量会进一步增大。
 
-![Data and Pipeline Model Parallelism](/Users/guokunhao/笔记/parallelism/megatron2/Data and Pipeline Model Parallelism.png)
+![Data and Pipeline Model Parallelism](megatron2/static/Data and Pipeline Model Parallelism.png)
 
 随着PP的增大，吞吐量会减小（随着DP的增大，吞吐量会增大）。所以PP应该主要用于支持单个设备放不下的模型，而DP用于扩大训练规模。
 
@@ -507,7 +507,7 @@ $pipeline\,bubble\,size = \frac{p-1}{m} = \frac{n/d-1}{b^`/d} = \frac{n-d}{b^`}$
 
 跨服务器执行all_reduce操作成本非常高。TP需要对每个microbatch执行all_reduce操作，而DP只需要对每个batch执行all_reduce操作。除此之外，每个TP进程只执行一个层的计算子集，效率较低。
 
-![Data and Tensor Model Parallelism](/Users/guokunhao/笔记/parallelism/megatron2/Data and Tensor Model Parallelism.png)
+![Data and Tensor Model Parallelism](megatron2/static/Data and Tensor Model Parallelism.png)
 
 batch size越大，DP的数据通信会减少（因为需要通信的batch数减少）。
 
@@ -523,7 +523,7 @@ batch size越大，DP的数据通信会减少（因为需要通信的batch数减
 
 b通过改变m来影响bubble size，同时也会影响算数强度。
 
-![Microbatch Size](/Users/guokunhao/笔记/parallelism/megatron2/Microbatch Size.png)
+![Microbatch Size](megatron2/static/Microbatch Size.png)
 
 **总结3**：最佳的microbatch大小b，取决于模型吞吐量、内存占用、流水线p、DP度d和batch size大小B。
 
@@ -533,7 +533,7 @@ activation checkpoints的数量不会影响吞吐量，但会影响内存占用�
 
 A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活值大小，一个model stage 有 l 个层，有c个checkpoints，那么总的内存占用是：$c*A_{input} + l/c*A^{intermediate}$，当$c = \sqrt{l*(A^{intermediate}/A^{input})}$ 时，内存占用最小。通常情况下，每1～2个transformer layers 去checkpoint是最优的。
 
-![Activation Recomputation](/Users/guokunhao/笔记/parallelism/megatron2/Activation Recomputation.png)
+![Activation Recomputation](megatron2/static/Activation Recomputation.png)
 
 对于小的batch size，由于反向传播前的激活重计算，会导致一个比较低的吞吐量；但是使用了激活重计算，就可以使用较大的batch size，这可以减小bubble size，从而提升吞吐量。
 
@@ -549,7 +549,7 @@ A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活
 
 通过这个优化，每对连续stage之间的通信量减少为$\frac{bsh}t$
 
-![scatter:gather ](/Users/guokunhao/笔记/parallelism/megatron2/scatter:gather .png)
+![scatter:gather ](megatron2/static/scatter:gather .png)
 
 ### Computation Optimizations
 
@@ -580,7 +580,7 @@ A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活
 
 #### tensor parallelism
 
-![tensor parallelism](/Users/guokunhao/笔记/parallelism/megatron3/tensor parallelism.png)
+![tensor parallelism](megatron3/static/tensor parallelism.png)
 
 **Attention Block**
 
@@ -617,13 +617,13 @@ A~input~ 是一个层的input size，A~intermediate~ 是一个层的中间激活
 
 **MLP**
 
-![SP-MLP](/Users/guokunhao/笔记/parallelism/megatron3/SP-MLP.png)
+![SP-MLP](megatron3/static/SP-MLP.png)
 
 ​	下标表示设备编号，上标表示按照哪个维度进行切割。layer- norm的输入size是[s，b，h]。
 
 ​	对layer-norm的输入在sequence维度进行并行化 $X = [X_1^s,X_2^s]$，layer-norm的输出也将在sequence维度进行并行。对于带GeLU非线性的线性层，需要完整的 Y 作为输入，所以在前向传播阶段 g operator需要做一次all_gather操作。然后对矩阵A和矩阵B分别进行列切割和行切割进行并行（TP）。在进入 dropout 之前W~1~、W~2~ 需要加起来（即在TP中做一次all_reduce），在进入dropout后，数据需要沿着sequence dimensions维度进行切割。所以我们可以把这两个操作和在一起（相加和切割），进行一次reduce-scatter操作。所以在前向传播阶段。$\bar g$  需要进行一次reduce-scatter操作。总的计算过程如下：
 
-![SP-MLP-equation](/Users/guokunhao/笔记/parallelism/megatron3/SP-MLP-equation.png)
+![SP-MLP-equation](megatron3/static/SP-MLP-equation.png)
 
 $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，在反向传播中做reduce_scatter操作；$\bar g$ 在前向传播中做reduce_scatter操作，在反向传播中做all_gather操作。
 
@@ -647,7 +647,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 ### Total Activation Memory
 
-![transformer](/Users/guokunhao/笔记/parallelism/megatron3/transformer.png)
+![transformer](megatron3/static/transformer.png)
 
 ​	除了transformer layer，还有input embedding、最后的layer-norm和output layer的激活内存占用需要计算。
 
@@ -675,13 +675,13 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 实验中的模型配置如下：
 
-![model configuration](/Users/guokunhao/笔记/parallelism/megatron3/model configuration.png)
+![model configuration](megatron3/static/model configuration.png)
 
 ### Memory Usage
 
 每个transformer layer，在不同的技术下所需要的activation内存总结如下：
 
-![activation memory](/Users/guokunhao/笔记/parallelism/megatron3/activation memory.png)
+![activation memory](megatron3/static/activation memory.png)
 
 每种技术都可以将所需的内存降低至一半左右，两种技术融合起来可以将所需的内存减少5倍，降低至原来的20%左右，这只是full activation recomputation的2倍左右。
 
@@ -689,7 +689,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 对于22B模型，一个transformer layer的前向传播和反向传播所需的执行时间如下：
 
-![execution time](/Users/guokunhao/笔记/parallelism/megatron3/execution time.png)
+![execution time](megatron3/static/execution time.png)
 
 ​	前两行表明，SP可以提高训练速度，缩短计算时间，这主要是由于layer-norm和dropout只在 1 / t 的数据上进行计算。这是SP的主要优势的额外的好处（主要优势是，减少activation内存占用）。同时，通过实验还发现，reduce-scatter和all_gather分开执行，比一起执行，更慢，这就减少了SP对性能的提升。
 
@@ -697,7 +697,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 ### End-to-End Iteration Time
 
-![end-to-end time](/Users/guokunhao/笔记/parallelism/megatron3/end-to-end time.png)
+![end-to-end time](megatron3/static/end-to-end time.png)
 
 model FLOPs：不论实现和硬件限制是什么，做一次前向传播和反向传播所需的浮点运算次数。是独立于实现和硬件的，只依赖于模型。
 

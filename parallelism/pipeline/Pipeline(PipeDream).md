@@ -32,7 +32,7 @@
 
 ## Method
 
-![pipeldream](/Users/guokunhao/笔记/parallelism/pipeline/pipeldream.png)
+![pipeldream](static/pipeldream.png)
 
 有三个问题需要解决：
 
@@ -76,9 +76,9 @@ W~l~^m^  ：使用m台机器进行DP，并使用分布式参数服务器时，�
 
 最小化总体运行时间，等价于最小化最慢的stage的时间，有最优子问题属性，用动态规划求解
 
-![t_ij](/Users/guokunhao/笔记/parallelism/pipeline/t_ij.png)
+![t_ij](static/t_ij.png)
 
-![A_jm](/Users/guokunhao/笔记/parallelism/pipeline/A_jm.png)
+![A_jm](static/A_jm.png)
 
 子问题个数为O(NM)，每个子问题的复杂度为O(NM)，所以总的时间复杂度为O(N^2^M^2^)
 
@@ -117,13 +117,13 @@ pi pedream的调度方案：
 
 只能保证在一个stage内，前向计算和反向计算使用相同版本的参数，但是不同stage的参数版本还是不一致的。
 
-![weight stashing](/Users/guokunhao/笔记/parallelism/pipeline/weight stashing.png)
+![weight stashing](static/weight stashing.png)
 
 **vertical sync** 
 
 来解决各stage所用参数版本不一致问题，每个stage都用input stage 中最新的参数版本，相应的信息与激活值和梯度一起传递。
 
-![vertical sync](/Users/guokunhao/笔记/parallelism/pipeline/vertical sync.png)
+![vertical sync](static/vertical sync.png)
 
 **weight stashing 是比较重要的，vertical sync的作用可以忽略，所以weight stashing是默认设置**
 

@@ -51,7 +51,7 @@ Compression、activation checkpointing、live analysis
 
 **model state不会在训练的所有时间都被用到（现有的方法会在整个训练过程中都保存model state）** 
 
-![ZeRO-DP](/Users/guokunhao/笔记/parallelism/ZeRo/ZeRO-DP.png)
+![ZeRO-DP](static/ZeRO-DP.png)
 
 **基于一下3个关键想法**
 

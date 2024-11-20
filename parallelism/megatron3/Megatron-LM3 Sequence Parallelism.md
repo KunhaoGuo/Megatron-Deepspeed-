@@ -13,7 +13,7 @@
 
 #### tensor parallelism
 
-![tensor parallelism](/Users/guokunhao/笔记/parallelism/megatron3/tensor parallelism.png)
+![tensor parallelism](static/tensor parallelism.png)
 
 **Attention Block**
 
@@ -46,17 +46,17 @@
 
 ​	在transformer layer中的non TP 区域，数据的操作在sequence dimensions 是相互独立的，所以我们可以沿着sequence dimensions 去切割数据，从而节约activation内存占用。在sequence dimensions 进行并行后，会额外引入集合通信操作。在前向传播中，在执行 f 之前，需要执行一次all_gather操作，在执行 $\bar f$  之后，需要执行一次scatter操作。
 
-![sequence parallelism](/Users/guokunhao/笔记/parallelism/megatron3/sequence parallelism.png)
+![sequence parallelism](static/sequence parallelism.png)
 
 **MLP**
 
-![SP-MLP](/Users/guokunhao/笔记/parallelism/megatron3/SP-MLP.png)
+![SP-MLP](static/SP-MLP.png)
 
 ​	下标表示设备编号，上标表示按照哪个维度进行切割。layer- norm的输入size是[s，b，h]。
 
 ​	对layer-norm的输入在sequence维度进行并行化 $X = [X_1^s,X_2^s]$，layer-norm的输出也将在sequence维度进行并行。对于带GeLU非线性的线性层，需要完整的 Y 作为输入，所以在前向传播阶段 g operator需要做一次all_gather操作。然后对矩阵A和矩阵B分别进行列切割和行切割进行并行（TP）。在进入 dropout 之前W~1~、W~2~ 需要加起来（即在TP中做一次all_reduce），在进入dropout后，数据需要沿着sequence dimensions维度进行切割。所以我们可以把这两个操作和在一起（相加和切割），进行一次reduce-scatter操作。所以在前向传播阶段。$\bar g$  需要进行一次reduce-scatter操作。总的计算过程如下：
 
-![SP-MLP-equation](/Users/guokunhao/笔记/parallelism/megatron3/SP-MLP-equation.png)
+![SP-MLP-equation](static/SP-MLP-equation.png)
 
 $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，在反向传播中做reduce_scatter操作；$\bar g$ 在前向传播中做reduce_scatter操作，在反向传播中做all_gather操作。
 
@@ -80,7 +80,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 ### Total Activation Memory
 
-![transformer](/Users/guokunhao/笔记/parallelism/megatron3/transformer.png)
+![transformer](static/transformer.png)
 
 ​	除了transformer layer，还有input embedding、最后的layer-norm和output layer的激活内存占用需要计算。
 
@@ -108,13 +108,13 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 实验中的模型配置如下：
 
-![model configuration](/Users/guokunhao/笔记/parallelism/megatron3/model configuration.png)
+![model configuration](static/model configuration.png)
 
 ### Memory Usage
 
 每个transformer layer，在不同的技术下所需要的activation内存总结如下：
 
-![activation memory](/Users/guokunhao/笔记/parallelism/megatron3/activation memory.png)
+![activation memory](static/activation memory.png)
 
 每种技术都可以将所需的内存降低至一半左右，两种技术融合起来可以将所需的内存减少5倍，降低至原来的20%左右，这只是full activation recomputation的2倍左右。
 
@@ -122,7 +122,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 对于22B模型，一个transformer layer的前向传播和反向传播所需的执行时间如下：
 
-![execution time](/Users/guokunhao/笔记/parallelism/megatron3/execution time.png)
+![execution time](static/execution time.png)
 
 ​	前两行表明，SP可以提高训练速度，缩短计算时间，这主要是由于layer-norm和dropout只在 1 / t 的数据上进行计算。这是SP的主要优势的额外的好处（主要优势是，减少activation内存占用）。同时，通过实验还发现，reduce-scatter和all_gather分开执行，比一起执行，更慢，这就减少了SP对性能的提升。
 
@@ -130,7 +130,7 @@ $g\,和\,\bar g $  是共轭操作，g 在前向传播中做all_gather操作，�
 
 ### End-to-End Iteration Time
 
-![end-to-end time](/Users/guokunhao/笔记/parallelism/megatron3/end-to-end time.png)
+![end-to-end time](static/end-to-end time.png)
 
 model FLOPs：不论实现和硬件限制是什么，做一次前向传播和反向传播所需的浮点运算次数。是独立于实现和硬件的，只依赖于模型。
 

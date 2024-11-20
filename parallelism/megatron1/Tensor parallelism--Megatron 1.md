@@ -8,7 +8,7 @@
 
 ## MLP block
 
-![megatron1-mlp](/Users/guokunhao/笔记/parallelism/megatron1/megatron1-mlp.png)
+![megatron1-mlp](static/megatron1-mlp.png)
 
 - 先 **列切割** ，后 **行切割** 
 
@@ -33,7 +33,7 @@
 
 ## Self Attention Block
 
-![megatron1-attention](/Users/guokunhao/笔记/parallelism/megatron1/megatron1-attention.png)
+![megatron1-attention](static/megatron1-attention.png)
 
 - 利用多头注意力先天的并行优势，在 Q\K\V 矩阵上按**列切割**，在输出矩阵上按**行切割** 。
 
@@ -43,7 +43,7 @@
 
 ## Embedding Block（输入层）
 
-![embedding](/Users/guokunhao/笔记/parallelism/megatron1/embedding.png)
+![embedding](static/embedding.png)
 
 - 输入层和输出层共享权重，在 词表 方向切割矩阵
 
@@ -57,9 +57,9 @@
 
 #### 代码
 
-![crossentropy](/Users/guokunhao/笔记/parallelism/megatron1/crossentropy.png)
+![crossentropy](static/crossentropy.png)
 
-![crossenyropy2](/Users/guokunhao/笔记/parallelism/megatron1/crossenyropy2.jpeg)
+![crossenyropy2](static/crossenyropy2.jpeg)
 
 ## 随机种子设置
 
